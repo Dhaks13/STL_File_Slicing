@@ -17,8 +17,10 @@ Including another URLconf
 # from django.contrib import admin
 from django.urls import path
 from home import views as HomeViews
+from layers import views as LayerViews
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
     path('', HomeViews.HomeView, name='home'),
+    path('layers/', LayerViews.layer_view, name='layers'),
 ]
