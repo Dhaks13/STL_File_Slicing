@@ -16,6 +16,8 @@ Including another URLconf
 """
 # from django.contrib import admin
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 from home import views as HomeViews
 from layers import views as LayerViews
 
@@ -24,3 +26,10 @@ urlpatterns = [
     path('', HomeViews.HomeView, name='home'),
     path('layers/', LayerViews.layer_view, name='layers'),
 ]
+
+# Only in DEBUG:
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.MEDIA_URL,
+        document_root=settings.MEDIA_ROOT
+    )

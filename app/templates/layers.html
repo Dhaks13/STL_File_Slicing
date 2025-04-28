@@ -2,21 +2,60 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Home</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% load static %}
+        <title>Layers</title>
+        <link rel="stylesheet" href="{% static 'css/layers.css' %}">
     </head>
     <body>
-        <header>
+        <div class="content">
             <h1>3D Objects to 2D layers</h1>
-        </header>
-        <div class="file-list-container">
-            <h2>Layers</h2>
-            <ul id="file-list">
-                {% for file in files %}
-                    <li>{{ file }}</li>
-                {% endfor %}
-            </ul>
+            <div class="split-container">
+            <div class="file-list-container">
+                <h2>Layers</h2>
+                {% if files %}
+                    <p>Click on a layer to preview it:</p>
+                {% else %}
+                    <p>No layers available. <a href="{% url 'home' %}">Go upload an STL</a>.</p>
+                {% endif %}
+                {% if files %}
+                <ul class="files" id="file-list">
+                    {% for file in files %}
+                    <li>
+                        <a href="#" class="layer-link" data-url="{{ file.url }}">
+                        {{ file.name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No layers available. <a href="{% url 'home' %}">Go upload an STL</a>.</p>
+                {% endif %}
+            </div>
 
+            <div class="image-container">
+                <h2>Layer Preview</h2>
+                {% if files %}
+                <img id="layer-image" src="{{ files.0.url }}" alt="{{ files.0.name }}" />
+                {% else %}
+                <p>No preview available.</p>
+                {% endif %}
+            </div>
+            </div>
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+            const links = document.querySelectorAll('.layer-link');
+            const img   = document.getElementById('layer-image');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                e.preventDefault();
+                img.src = this.dataset.url;
+                img.alt = this.textContent.trim();
+                });
+            });
+            });
+        </script>
+        </body>
 </html>

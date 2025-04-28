@@ -1,0 +1,132 @@
+*{
+    transition: 0.3s ease, color 0.3s ease;
+    box-sizing: border-box;
+}
+
+body{
+    background: url('../img/bg.jpg') no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.content{
+    background-color: rgba(82, 82, 82, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    display: block;
+    margin: 2.5% auto;
+    min-width: 80%;
+    min-height: 70%;
+    max-height: 80%;
+    max-width: 90%;
+    overflow: auto;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: rgb(236, 234, 234);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(31, 31, 31, 0.1);
+}
+
+h1{
+    text-align: center;
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+a{
+    text-decoration: none;
+    color: white;
+    font-size: 1.2em;
+    margin: 10px 0;
+    padding: 10px 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+a:hover{
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.split-container{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    flex-wrap: wrap;
+    gap: 5%;
+}
+
+.file-list-container{
+    display: block;
+    justify-content: center;
+    align-items: center;
+    min-width: 30%;
+    height: 100%;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(31, 31, 31, 0.1);
+    overflow: auto;
+    
+}
+
+.files{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: auto;
+    max-height: 50vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+
+    li{
+        width: 100%;
+        height: 10%;
+        padding: 10px;
+        margin: 1px 0;
+    }
+}
+
+.files::-webkit-scrollbar{
+    width: 10px;
+}
+.files::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+}
+.files::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.7);
+}
+.files::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+.files::-webkit-scrollbar-track:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.image-container{
+    display: flex;
+    flex-direction:column;
+    justify-content: center;
+    align-items: center;
+    min-width: 40%;
+    height: 80%;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(31, 31, 31, 0.1);
+}
+.image-container img{
+    max-width: 80%;
+    max-height: 80%;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(31, 31, 31, 0.1);
+}

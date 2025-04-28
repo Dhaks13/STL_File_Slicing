@@ -1,22 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        {% load static %}
         <title>Home</title>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <link rel="stylesheet" href="{% static 'css/home.css' %}">
     </head>
+    
     <body>
-        <header>
+        <div class="content">
             <h1>3D Objects to 2D layers</h1>
-        </header>
-        <div class="upload-container">
-            <form id="upload-form" action="layers" method="post" enctype="multipart/form-data">
-                <label for="file-upload">Upload Your STL file:</label>
-                <input id="file-upload" title="Choose an STL file to upload" placeholder="Select an STL file" type="file" name="file" accept=".stl" required/>
-                <input type="submit" value="Upload" />
-            </form>
+            <div class="upload-container">
+                <form id="upload-form" action="{% url 'layers' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <label for="file-upload">Upload Your STL file</label>
+                    <input id="file-upload" title="Choose an STL file to upload" placeholder="Select an STL file" type="file" name="file" accept=".stl" required/>
+                    <input type="submit" value="Upload" />
+                </form>
+                <div id="loader-overlay" class="loader-overlay">
+                    <div class="spinner"></div>
+                </div>
+            </div>
         </div>
     </body>
-</html>
+    <script>
+        document
+          .getElementById('upload-form')
+          .addEventListener('submit', function() {
+            document.getElementById('loader-overlay').style.display = 'flex';
+          });
+      </script>      
+    </html>

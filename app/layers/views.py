@@ -1,30 +1,95 @@
-from django.shortcuts import render
 import os
+import numpy as np
+import trimesh
+import matplotlib
+matplotlib.use('Agg')  # non-interactive backend
+import matplotlib.pyplot as plt
 
-# Create your views here.
-def layer_index():
-    # Get the path to the current file
-    current_file_path = os.path.abspath(__file__)
+from django.shortcuts import render, redirect
+from django.conf import settings
 
-    # Get the directory name of the current file
-    directory_name = os.path.dirname(current_file_path)
 
-    # Get the parent directory name
-    parent_directory_name = os.path.dirname(directory_name)
+def slice_stl_to_layers(stl_path, out_dir, layer_height=0.05, canvas_size=1024, margin=50):
+    os.makedirs(out_dir, exist_ok=True)
+    mesh = trimesh.load_mesh(stl_path)
+    z_min, z_max = mesh.bounds[:, 2]
+    num_layers = int(np.ceil((z_max - z_min) / layer_height))
 
-    # Construct the path to the "templates" folder
-    layers_folder_path = os.path.join(parent_directory_name, "layers")
-    files = os.listdir(layers_folder_path)
-    # Filter the list to include only files with the ".png" extension
-    png_files = [f for f in files if f.endswith(".png")]
-    # Create a list of dictionaries with file names and paths
-    png_files_list = []
-    for file in png_files:
-        file_path = os.path.join(layers_folder_path, file)
-        png_files_list.append({"name": file, "path": file_path})
-    return {"png_files": png_files_list}
+    region_colors = {
+        'inskin': 'blue', 'downskin': 'red', 'upskin': 'yellow',
+        'support': 'gray', 'highlight': 'green', 'dummy': 'black'
+    }
+    region_tags = list(region_colors)
+
+    for i in range(num_layers):
+        z = z_min + i * layer_height
+        section = mesh.section(plane_origin=[0, 0, z], plane_normal=[0, 0, 1])
+        if section is None:
+            continue
+        slice2D, _ = section.to_2D()
+        verts = slice2D.vertices
+
+        # Scale and center
+        xy_min, xy_max = verts.min(0), verts.max(0)
+        center = (xy_min + xy_max) / 2
+        span = np.linalg.norm(xy_max - xy_min) / 2
+        base_radius = (canvas_size - 2 * margin) / 2
+        scale = base_radius / span if span else 1
+        verts_s = (verts - center) * scale + canvas_size // 2
+
+        # Draw
+        fig, ax = plt.subplots(figsize=(canvas_size / 100, canvas_size / 100), dpi=100)
+        ax.set_xlim(0, canvas_size)
+        ax.set_ylim(0, canvas_size)
+        ax.axis('off')
+        ax.set_aspect('equal')
+        circle = plt.Circle((canvas_size // 2, canvas_size // 2), base_radius,
+                            fill=False, linestyle='--', linewidth=1, color='lightgray')
+        ax.add_artist(circle)
+
+        for j, ent in enumerate(slice2D.entities):
+            pts = ent.discrete(verts_s)
+            if len(pts) < 2:
+                continue
+            tag = region_tags[j % len(region_tags)]
+            color = region_colors[tag]
+            xs, ys = zip(*pts)
+            ax.plot(xs, ys, color=color, linewidth=1)
+
+        out_path = os.path.join(out_dir, f'layer_{i:04d}.png')
+        plt.savefig(out_path, dpi=100, bbox_inches='tight', pad_inches=0)
+        plt.close(fig)
 
 
 def layer_view(request):
-    png_files_list = layer_index()
-    return render(request, "layers.html", {"png_files": png_files_list})
+    if request.method == 'POST':
+        # --- Clear old layers ---
+        layers_dir = os.path.join(settings.MEDIA_ROOT, 'layers')
+        if os.path.isdir(layers_dir):
+            for fname in os.listdir(layers_dir):
+                fpath = os.path.join(layers_dir, fname)
+                if os.path.isfile(fpath):
+                    os.remove(fpath)
+        else:
+            os.makedirs(layers_dir)
+
+        # Save new STL upload
+        uploaded = request.FILES['file']
+        upload_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
+        os.makedirs(upload_dir, exist_ok=True)
+        stl_path = os.path.join(upload_dir, uploaded.name)
+        with open(stl_path, 'wb') as f:
+            for chunk in uploaded.chunks():
+                f.write(chunk)
+
+        # Slice into fresh layers
+        slice_stl_to_layers(stl_path, layers_dir)
+
+        return redirect('layers')
+    layers_dir = os.path.join(settings.MEDIA_ROOT, 'layers')
+    filenames = sorted(f for f in os.listdir(layers_dir) if f.endswith('.png'))
+    files = [
+        {'name': name, 'url': settings.MEDIA_URL + 'layers/' + name}
+        for name in filenames
+    ]
+    return render(request, 'layers.html', {'files': files})
