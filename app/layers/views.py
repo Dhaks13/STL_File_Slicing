@@ -4,7 +4,6 @@ import trimesh
 import matplotlib
 matplotlib.use('Agg')  # non-interactive backend
 import matplotlib.pyplot as plt
-
 from django.shortcuts import render, redirect
 from django.conf import settings
 
@@ -20,21 +19,21 @@ def slice_stl_to_layers(stl_path, out_dir, layer_height=0.05, canvas_size=1024, 
     x_max, y_max, z_max = bounds[1]
 
     corners = [
-    [x_min - padding, y_min - padding],
-    [x_max + padding, y_min - padding],
-    [x_max + padding, y_max + padding],
-    [x_min - padding, y_max + padding]
+        [x_min - padding, y_min - padding],
+        [x_max + padding, y_min - padding],
+        [x_max + padding, y_max + padding],
+        [x_min - padding, y_max + padding]
     ]
     lines = []
     for x, y in corners:
-      start = np.array([x, y, z_min])
-      end = np.array([x, y, z_max])
-      line = trimesh.creation.cylinder(
-        radius=line_radius,
-        segment=[start, end],
-        sections=12
-      )
-      lines.append(line)
+        start = np.array([x, y, z_min])
+        end = np.array([x, y, z_max])
+        line = trimesh.creation.cylinder(
+            radius=line_radius,
+            segment=[start, end],
+            sections=12
+        )
+        lines.append(line)
 
     all_lines = trimesh.util.concatenate(lines)
     combined_mesh = trimesh.util.concatenate([mesh, all_lines])
@@ -42,12 +41,6 @@ def slice_stl_to_layers(stl_path, out_dir, layer_height=0.05, canvas_size=1024, 
 
     z_min, z_max = mesh.bounds[:, 2]
     num_layers = int(np.ceil((z_max - z_min) / layer_height))
-
-    region_colors = {
-        'inskin': 'blue', 'downskin': 'red', 'upskin': 'yellow',
-        'support': 'gray', 'highlight': 'green', 'dummy': 'black'
-    }
-    region_tags = list(region_colors)
 
     for i in range(num_layers):
         z = z_min + i * layer_height
@@ -75,14 +68,12 @@ def slice_stl_to_layers(stl_path, out_dir, layer_height=0.05, canvas_size=1024, 
                             fill=False, linestyle='--', linewidth=1, color='lightgray')
         ax.add_artist(circle)
 
-        for j, ent in enumerate(slice2D.entities):
+        for ent in slice2D.entities:
             pts = ent.discrete(verts_s)
             if len(pts) < 2:
                 continue
-            tag = region_tags[j % len(region_tags)]
-            color = region_colors[tag]
             xs, ys = zip(*pts)
-            ax.plot(xs, ys, color=color, linewidth=1)
+            ax.plot(xs, ys, color='black', linewidth=1)  # Fixed color
 
         out_path = os.path.join(out_dir, f'layer_{i:04d}.png')
         plt.savefig(out_path, dpi=100, bbox_inches='tight', pad_inches=0)
