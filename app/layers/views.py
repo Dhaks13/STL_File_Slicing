@@ -12,6 +12,34 @@ from django.conf import settings
 def slice_stl_to_layers(stl_path, out_dir, layer_height=0.05, canvas_size=1024, margin=50):
     os.makedirs(out_dir, exist_ok=True)
     mesh = trimesh.load_mesh(stl_path)
+
+    padding = 0.01
+    line_radius = 0.1
+    bounds = mesh.bounds
+    x_min, y_min, z_min = bounds[0]
+    x_max, y_max, z_max = bounds[1]
+
+    corners = [
+    [x_min - padding, y_min - padding],
+    [x_max + padding, y_min - padding],
+    [x_max + padding, y_max + padding],
+    [x_min - padding, y_max + padding]
+    ]
+    lines = []
+    for x, y in corners:
+      start = np.array([x, y, z_min])
+      end = np.array([x, y, z_max])
+      line = trimesh.creation.cylinder(
+        radius=line_radius,
+        segment=[start, end],
+        sections=12
+      )
+      lines.append(line)
+
+    all_lines = trimesh.util.concatenate(lines)
+    combined_mesh = trimesh.util.concatenate([mesh, all_lines])
+    mesh = combined_mesh
+
     z_min, z_max = mesh.bounds[:, 2]
     num_layers = int(np.ceil((z_max - z_min) / layer_height))
 
