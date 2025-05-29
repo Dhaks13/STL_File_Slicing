@@ -48,7 +48,7 @@ h1{
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
 
-    input{
+    input {
         margin: 10px 0;
         padding: 10px;
         border: 1px solid rgba(255, 255, 255, 0.5);
@@ -57,7 +57,7 @@ h1{
         color: white;
         font-size: 1em; 
         cursor: pointer;
-
+        
         &::file-selector-button {
             padding: 10px 20px;
             border: none;
@@ -71,6 +71,15 @@ h1{
         &::file-selector-button:hover {
             background-color: rgba(255, 255, 255, 0.7);
             color: rgb(24, 24, 24);
+        }
+
+        &::file-selector-button:active {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: rgb(24, 24, 24);
+        }
+
+        &::placeholder {
+            color: rgba(255, 255, 255, 0.9);
         }
     }
 }

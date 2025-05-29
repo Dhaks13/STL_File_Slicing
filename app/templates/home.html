@@ -18,6 +18,8 @@
                     {% csrf_token %}
                     <label for="file-upload">Upload Your STL file</label>
                     <input id="file-upload" title="Choose an STL file to upload" placeholder="Select an STL file" type="file" name="file" accept=".stl" required/>
+                    <label for="height">Layer Height (mm)</label>
+                    <input id='height' type="float" name="layer_height" placeholder="Layer Height (mm)" step="0.01" required />
                     <input type="submit" value="Upload" />
                 </form>
                 <div id="loader-overlay" class="loader-overlay">

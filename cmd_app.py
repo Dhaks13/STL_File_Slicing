@@ -1,11 +1,7 @@
 import os
-import numpy as np
 import trimesh
-import matplotlib
-matplotlib.use('Agg')  # non-interactive backend
+import numpy as np
 import matplotlib.pyplot as plt
-from django.shortcuts import render, redirect
-from django.conf import settings
 
 
 def slice_stl_to_layers(stl_path, out_dir, layer_height=0.05, canvas_size=1024, margin=50):
@@ -80,37 +76,36 @@ def slice_stl_to_layers(stl_path, out_dir, layer_height=0.05, canvas_size=1024, 
         plt.close(fig)
 
 
-def layer_view(request):
-    if request.method == 'POST':
-        # --- Clear old layers ---
-        layers_dir = os.path.join(settings.MEDIA_ROOT, 'layers')
-        if os.path.isdir(layers_dir):
-            for fname in os.listdir(layers_dir):
-                fpath = os.path.join(layers_dir, fname)
-                if os.path.isfile(fpath):
-                    os.remove(fpath)
-        else:
-            os.makedirs(layers_dir)
+def main():
+    print("Select an STL file to slice into layers.")
+    file = filedialog.askopenfilename(
+        title="Select STL file",
+        filetypes=[("STL files", "*.stl"), ("All files", "*.*")]
+    )
+    if not file:
+        print("No file selected.")
+        return
+    print("The layers will be saved as PNG images in the selected output directory.")
+    print("Select the output directory where the layers will be saved.")
+    out_dir = filedialog.askdirectory(
+        title="Select output directory"
+    )
+    if not out_dir:
+        print("No output directory selected.")
+        return
+    height = float(input("Enter layer height (default 0.05): ") or 0.05)
+    print(f"Slicing {file} into layers...")
+    slice_stl_to_layers(file, out_dir, layer_height=height)
 
-        # Save new STL upload
-        uploaded = request.FILES['file']
-        upload_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
-        os.makedirs(upload_dir, exist_ok=True)
-        stl_path = os.path.join(upload_dir, uploaded.name)
-        with open(stl_path, 'wb') as f:
-            for chunk in uploaded.chunks():
-                f.write(chunk)
-        layer_height = float(request.POST.get('layer_height'))
-        if not layer_height:
-            layer_height = 0.05
-        # Slice into fresh layers
-        slice_stl_to_layers(stl_path, layers_dir,layer_height=layer_height)
+if __name__ == "__main__":
+    import tkinter as tk
+    from tkinter import filedialog, messagebox
 
-        return redirect('layers')
-    layers_dir = os.path.join(settings.MEDIA_ROOT, 'layers')
-    filenames = sorted(f for f in os.listdir(layers_dir) if f.endswith('.png'))
-    files = [
-        {'name': name, 'url': settings.MEDIA_URL + 'layers/' + name}
-        for name in filenames
-    ]
-    return render(request, 'layers.html', {'files': files})
+    root = tk.Tk()
+    root.withdraw()  # Hide the root window
+
+    try:
+        main()
+        messagebox.showinfo("Success", "Layers generated successfully!")
+    except Exception as e:
+        messagebox.showerror("Error", str(e))    
