@@ -7,6 +7,7 @@
 
 
 ### **Install Dependencies And Configure Environment**
+Python: version 3.12.2
 - Create and activate new environment
 - Install the required python packages in requirements.txt using:
 ```
